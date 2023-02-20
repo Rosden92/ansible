@@ -1,0 +1,36 @@
+- name: Install jira and confluence
+  hosts: jira
+  become: true
+
+  pre_tasks:
+    - name: Install the Percona MySQL repo.
+      yum:
+        name: https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Install Python3
+      yum:
+        name:
+        - python3
+        - libselinux-python3.x86_64
+    - name: Install OpenlJDK 8
+      yum:
+        name: java-1.8.0-openjdk-headless
+        state: present
+      when: ansible_os_family == "RedHat"
+
+  roles:
+    - role: nginxinc.nginx
+      tags:
+        - nginx
+    - role:  geerlingguy.mysql
+      tags:
+        - mysql
+    - role: alvistack.jira
+      tags:
+        - jira
+    - role: alvistack.confluence
+      tags:
+        - confluence
+

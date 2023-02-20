@@ -1,0 +1,449 @@
+# Nginx configuration
+
+nginx_main_template_enable: true
+nginx_main_template:
+  template_file: nginx.conf.j2
+  conf_file_name: nginx.conf
+  conf_file_location: /etc/nginx/
+  user: nginx
+  worker_processes: auto
+  worker_rlimit_nofile: 10240
+  error_log:
+    location: /var/log/nginx/error.log
+    level: warn
+  worker_connections: 10240
+  http_enable: true
+  http_settings:
+    access_log_format:
+      - name: main
+        format: |-
+          '$remote_addr - $remote_user [$time_local] "$request" '
+          '$status $body_bytes_sent "$http_referer" '
+          '"$http_user_agent" "$http_x_forwarded_for"'
+    access_log_location:
+      - name: main
+        location: /var/log/nginx/access.log
+    tcp_nopush: true
+    tcp_nodelay: true
+    keepalive_timeout: 65
+    cache: false
+    rate_limit: false
+    keyval: false
+    server_tokens: "off"
+  stream_enable: false
+
+
+# Nginx custom configuration
+
+nginx_http_template_enable: true
+nginx_http_template:
+  jira_ip_com:
+    conf_file_name: jira_ip_com.conf
+    servers:
+      jira_com_http:
+        server_name: jira.ip.com
+        access_log:
+          - name: main
+            location: /var/log/nginx/jira_ip_com_access.log
+        error_log:
+          location: /var/log/nginx/jira_ip_com_error.log
+          level: warn
+        listen:
+          listen_http:
+            port: 80
+        web_server:
+          locations:
+            default:
+              location: /
+              custom_options:
+                - 'return 301 https://jira.ip.com'
+          http_demo_conf: false
+      jira_com_https:
+        server_name: jira.ip.com
+        access_log:
+          - name: main
+            location: /var/log/nginx/jira_ip_com_access.log
+        error_log:
+          location: /var/log/nginx/jira_ip_com_error.log
+          level: warn
+        listen:
+          listen_http:
+            port: 443
+            ssl: true
+        ssl:
+          cert: /etc/ssl/certs/jira.ip.com.crt
+          key: /etc/ssl/private/jira.ip.com.key
+        reverse_proxy:
+          locations:
+            backend:
+              location: /
+              include_files: []
+              proxy_set_header:
+                header_host:
+                  name: Host
+                  value: $host
+                header_Server:
+                  name: Server
+                  value: $host
+                header_x_forwarded_for:
+                  name: X-Forwarded-For
+                  value: "$proxy_add_x_forwarded_for"
+                header_connection:
+                  name: X-Forwarded-Protocol
+                  value: "$scheme"
+              client_max_body_size: 250m
+              proxy_pass: http://localhost:8080
+              proxy_redirect: off
+  jira_ip_org:
+    conf_file_name: jira_ip_org.conf
+    servers:
+      jira_org_http:
+        server_name: jira.ip.org
+        access_log:
+          - name: main
+            location: /var/log/nginx/jira_ip.org_access.log
+        error_log:
+          location: /var/log/nginx/jira_ip.org_error.log
+          level: warn
+        listen:
+          listen_http:
+            port: 80
+        web_server:
+          locations:
+            default:
+              location: /
+              custom_options:
+                - 'return 301 https://jira.ip.org'
+          http_demo_conf: false
+      jira_org_https:
+        server_name: jira.ip.org
+        access_log:
+          - name: main
+            location: /var/log/nginx/jira_ip.org_access.log
+        error_log:
+          location: /var/log/nginx/jira_ip.org_error.log
+          level: warn
+        listen:
+          listen_http:
+            port: 443
+            ssl: true
+        ssl:
+          cert: /etc/ssl/certs/jira.ip.org.crt
+          key: /etc/ssl/private/jira.ip.org.key
+        reverse_proxy:
+          locations:
+            backend:
+              location: /
+              include_files: []
+              proxy_set_header:
+                header_host:
+                  name: Host
+                  value: $host
+                header_Server:
+                  name: Server
+                  value: $host
+                header_x_forwarded_for:
+                  name: X-Forwarded-For
+                  value: "$proxy_add_x_forwarded_for"
+                header_connection:
+                  name: X-Forwarded-Protocol
+                  value: "$scheme"
+              client_max_body_size: 250m
+              proxy_pass: http://localhost:8080
+              proxy_redirect: off
+  wiki_ip_com:
+    conf_file_name: wiki_ip_com.conf
+    servers:
+      wiki_com_http:
+        server_name: wiki.ip.com
+        access_log:
+          - name: main
+            location: /var/log/nginx/wiki_ip.com_access.log
+        error_log:
+          location: /var/log/nginx/wiki_ip.com_error.log
+          level: warn
+        listen:
+          listen_http:
+            port: 80
+        web_server:
+          locations:
+            default:
+              location: /
+              custom_options:
+                - 'return 301 https://wiki.ip.com'
+          http_demo_conf: false
+      wiki_com_https:
+        server_name: wiki.ip.com
+        access_log:
+          - name: main
+            location: /var/log/nginx/wiki_ip.com_access.log
+        error_log:
+          location: /var/log/nginx/wiki_ip.com_error.log
+          level: warn
+        listen:
+          listen_http:
+            port: 443
+            ssl: true
+        ssl:
+          cert: /etc/ssl/certs/wiki.ip.com.crt
+          key: /etc/ssl/private/wiki.ip.com.key
+        client_max_body_size: 50m
+        reverse_proxy:
+          locations:
+            backend:
+              location: /
+              include_files: []
+              proxy_set_header:
+                header_host:
+                  name: Host
+                  value: $host
+                header_Server:
+                  name: Server
+                  value: $host
+                header_x_forwarded_for:
+                  name: X-Forwarded-For
+                  value: "$proxy_add_x_forwarded_for"
+                header_connection:
+                  name: X-Forwarded-Protocol
+                  value: "$scheme"
+              proxy_pass: http://localhost:8090
+              proxy_redirect: off
+            backend_synchrony:
+              location: /synchrony
+              include_files: []
+              proxy_set_header:
+                header_host:
+                  name: Host
+                  value: $host
+                header_Server:
+                  name: Server
+                  value: "$host"
+                header_x_forwarded_for:
+                  name: X-Forwarded-For
+                  value: "$proxy_add_x_forwarded_for"
+                header_connection:
+                  name: X-Forwarded-Protocol
+                  value: "$scheme"
+                header_Upgrade:
+                  name: Upgrade
+                  value: "$scheme"
+                header_Connection:
+                  name: Connection
+                  value: "Upgrade"
+              proxy_pass: http://localhost:8091/synchrony
+              proxy_redirect: off
+              proxy_http_version: 1.1
+  wiki_ip_org:
+    conf_file_name: wiki_ip_org.conf
+    servers:
+      wiki_org_http:
+        server_name: wiki.ip.org
+        access_log:
+          - name: main
+            location: /var/log/nginx/wiki_ip.org_access.log
+        error_log:
+          location: /var/log/nginx/wiki_ip.org_error.log
+          level: warn
+        listen:
+          listen_http:
+            port: 80
+        web_server:
+          locations:
+            default:
+              location: /
+              custom_options:
+                - 'return 301 https://wiki.ip.org'
+          http_demo_conf: false
+      wiki_org_https:
+        server_name: wiki.ip.org
+        access_log:
+          - name: main
+            location: /var/log/nginx/wiki_ip.org_access.log
+        error_log:
+          location: /var/log/nginx/wiki_ip.org_error.log
+          level: warn
+        listen:
+          listen_http:
+            port: 443
+            ssl: true
+        ssl:
+          cert: /etc/ssl/certs/wiki.ip.org.crt
+          key: /etc/ssl/private/wiki.ip.org.key
+        client_max_body_size: 50m
+        reverse_proxy:
+          locations:
+            backend:
+              location: /
+              include_files: []
+              proxy_set_header:
+                header_host:
+                  name: Host
+                  value: $host
+                header_Server:
+                  name: Server
+                  value: $host
+                header_x_forwarded_for:
+                  name: X-Forwarded-For
+                  value: "$proxy_add_x_forwarded_for"
+                header_connection:
+                  name: X-Forwarded-Protocol
+                  value: "$scheme"
+              proxy_pass: http://localhost:8090
+              proxy_redirect: off
+            backend_synchrony:
+              location: /synchrony
+              include_files: []
+              proxy_set_header:
+                header_host:
+                  name: Host
+                  value: $host
+                header_Server:
+                  name: Server
+                  value: "$host"
+                header_x_forwarded_for:
+                  name: X-Forwarded-For
+                  value: "$proxy_add_x_forwarded_for"
+                header_connection:
+                  name: X-Forwarded-Protocol
+                  value: "$scheme"
+                header_Upgrade:
+                  name: Upgrade
+                  value: "$scheme"
+                header_Connection:
+                  name: Connection
+                  value: /"Upgrade/"
+              proxy_pass: http://localhost:8091/synchrony
+              proxy_redirect: off
+              proxy_http_version: 1.1
+
+# SSL certs upload via Nginx
+nginx_ssl_upload_enable: True
+nginx_ssl_crt_upload_src: files/certs/jira/*.crt
+nginx_ssl_key_upload_src: files/certs/jira/*.key
+
+# MySQl custom configuration
+
+mysql_log_file_group: mysql
+mysql_syslog_tag: mysqld
+mysql_socket: /var/lib/mysql/mysql.sock
+mysql_daemon: mysqld
+mysql_pid_file: /var/run/mysqld/mysqld.pid
+mysql_log_error: /var/log/mysqld.err
+mysql_packages:
+  - Percona-Server-server-56
+  - MySQL-python
+
+# Memory settings
+mysql_key_buffer_size: "8M"
+mysql_max_allowed_packet: "256M"
+mysql_table_open_cache: "2000"
+mysql_sort_buffer_size: "262144"
+mysql_read_buffer_size: "131072"
+mysql_read_rnd_buffer_size: "262144"
+mysql_myisam_sort_buffer_size: "8M"
+mysql_thread_cache_size: "256"
+mysql_query_cache_type: "0"
+mysql_query_cache_size: "0"
+mysql_query_cache_limit: "0"
+mysql_max_connections: "256"
+mysql_tmp_table_size: "16M"
+mysql_max_heap_table_size: "16M"
+mysql_group_concat_max_len: "1024"
+mysql_join_buffer_size: "262144"
+
+# Other settings.
+mysql_lower_case_table_names: "0"
+mysql_wait_timeout: "28800"
+mysql_event_scheduler_state: "OFF"
+
+# InnoDB settings.
+mysql_innodb_file_per_table: "1"
+# Set .._buffer_pool_size up to 80% of RAM but beware of setting too high.
+mysql_innodb_buffer_pool_size: "4G"
+# Set .._log_file_size to 25% of buffer pool size.
+mysql_innodb_log_file_size: "256M"
+mysql_innodb_log_buffer_size: "32M"
+mysql_innodb_flush_log_at_trx_commit: "1"
+mysql_innodb_lock_wait_timeout: "50"
+
+# These settings require MySQL > 5.5.
+mysql_innodb_large_prefix: "1"
+mysql_innodb_file_format: "Barracuda"
+
+# mysqldump settings.
+mysql_mysqldump_max_allowed_packet: "256M"
+overwrite_global_mycnf: true
+mysql_config_include_files:
+  - src: files/jira/jira.cnf
+mysql_config_include_dir: /etc/my.cnf.d/
+
+#Replication settings
+mysql_server_id: "1"
+mysql_max_binlog_size: "100M"
+mysql_binlog_format: "ROW"
+mysql_expire_logs_days: "5"
+
+#Databases config
+mysql_databases:
+   - name: jira
+     collation: utf8_bin
+     encoding: utf8
+     replicate: 1
+   - name: confluence
+     collation: utf8_bin
+     encoding: utf8
+     replicate: 1
+# Users.
+mysql_users:
+   - name:
+     host: 
+     password:
+     priv:
+   - name:
+     host:
+     password:
+     priv:
+
+#Jira configuration
+
+# Jira download
+jira_download:
+  url: "https://product-downloads.atlassian.com/software/jira/downloads/atlassian-jira-core-8.5.4.tar.gz"
+  dest: "{{ ansible_user_dir }}/.ansible/tmp/atlassian-jira-core-8.5.4.tar.gz"
+  checksum: "sha1:97c2e6a6968f36ae9bd7cce139c72812bd8151a4"
+
+# MySQL JDBC download
+mysql_jdbc_download:
+  url: "https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.46.tar.gz"
+  dest: "{{ ansible_user_dir }}/.ansible/tmp/mysql-connector-java-5.1.46.tar.gz"
+  checksum: "sha1:6404ebc64e0654e4afd1ce1cc3e4e745c0fe1baa"
+
+# JVM minimal and maximum memory usage.
+jira_jvm_minimum_memory: "1024m"
+jira_jvm_maximum_memory: "8G"
+
+# Proxy and context path setup.
+jira_catalina_connector_proxyName: jira.ip.org
+jira_catalina_connector_proxyPort: "443"
+jira_catalina_connector_scheme: "https"
+jira_catalina_connector_secure: "true"
+jira_catalina_context_path: ""
+
+#Confluence configuration
+
+# Confluence download
+confluence_download:
+  url: "https://product-downloads.atlassian.com/software/confluence/downloads/atlassian-confluence-7.4.1.tar.gz"
+  dest: "{{ ansible_user_dir }}/.ansible/tmp/atlassian-confluence-7.4.1.tar.gz"
+  checksum: "sha1:62efbf0c9c3789524d75a8e092efe541661f8f85"
+
+# JVM minimal and maximum memory usage.
+confluence_jvm_minimum_memory: "1024m"
+confluence_jvm_maximum_memory: "4G"
+
+# Proxy and context path setup.
+confluence_catalina_connector_proxyname: wiki.ip.org
+confluence_catalina_connector_proxyport: "443"
+confluence_catalina_connector_scheme: "https"
+confluence_catalina_connector_secure: "false"
+confluence_catalina_context_path: ""
