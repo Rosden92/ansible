@@ -1,0 +1,17 @@
+sysctl_d:
+  - file: ansible
+    order: 99
+    settings:
+      net.bridge.bridge-nf-call-iptables: 1
+      net.ipv4.ip_forward: 1
+
+# Kubernetes configuration
+kubernetes_version: '1.26'
+kubernetes_version_rhel_package: '1.26.4'
+
+kubernetes_role: master
+
+kubernetes_kubeadm_init_extra_opts: '--service-cidr=10.244.0.0/18'
+kubernetes_pod_network:
+  cni: 'calico'
+  cidr: '10.244.128.0/18'
